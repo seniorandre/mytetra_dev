@@ -203,7 +203,7 @@ void RecordTableView::onSelectionChanged(const QItemSelection &selected,
     // Если есть кандидат на перетаскивание записи (само перетаскивание еще не активно)
     // но мышка с него "уехала" на другую запись, и Qt пытается снять
     // выбор с кандидата на перетаскивание
-    if(startDragIndex.isValid() and startDragIndex==deselectRecord)
+    if(startDragIndex.isValid() && startDragIndex==deselectRecord)
     {
         qDebug() << "Disable select new record if drag candidate is set";
         return; // Делать програмный клик нельзя, чтобы не сбить перетаскивание, если оно начнется
@@ -581,7 +581,7 @@ void RecordTableView::mouseMoveEvent(QMouseEvent *event)
 
     // При режиме множественного выбора реакции на движение
     // мышкой быть не должно (так как работает криво), только на клики
-    if(selectionMode()==QAbstractItemView::ExtendedSelection and
+    if(selectionMode()==QAbstractItemView::ExtendedSelection &&
        this->selectionModel()->selectedRows().size()>1)
     {
         return;
@@ -591,7 +591,7 @@ void RecordTableView::mouseMoveEvent(QMouseEvent *event)
     if(isDragHappeningNow)
     {
         // При перетаскивании, Qt иногда может выделять соседние записи
-        if(startDragIndex.isValid() and startDragIndex!=this->indexAt( event->pos() ))
+        if(startDragIndex.isValid() && startDragIndex!=this->indexAt( event->pos() ))
         {
             qDebug() << "Drag detect, hold start record";
 
@@ -603,7 +603,7 @@ void RecordTableView::mouseMoveEvent(QMouseEvent *event)
     // Если при движении нажата левая кнопка мышки
     // и выделена ровно одна строка
     // (при включенном множественном выборе возможны случайные выдения и соседних строк)
-    if(event->buttons() & Qt::LeftButton and
+    if(event->buttons() & Qt::LeftButton &&
        this->selectionModel()->selectedRows().size()==1)
     {
         // Выясняется расстояние от места начала нажатия
