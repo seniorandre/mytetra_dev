@@ -142,7 +142,7 @@ void CommandRunner::removeProcessAndConsole(void)
     if(m_process)
     {
         // todo: разобраться с проблемой [WRN] QIODevice::read (QProcess): device not open
-        if(m_process->state()==QProcess::Running and m_process->processId()<=1) {
+        if(m_process->state()==QProcess::Running && m_process->processId()<=1) {
             qDebug() << QString("Abnormal execute command process PID %1 for close").arg( m_process->processId() );
         }
 
@@ -279,7 +279,7 @@ void CommandRunner::onProcessFinish(int exitCode, QProcess::ExitStatus exitStatu
     this->printOutput();
 
     // Если была какая-то ошибка
-    if ( m_isError or exitCode!=0 or exitStatus==QProcess::ExitStatus::CrashExit)
+    if( m_isError || exitCode!=0 || exitStatus==QProcess::ExitStatus::CrashExit )
     {
         m_console->switchToErrorView();
 
@@ -314,7 +314,7 @@ void CommandRunner::onProcessError(QProcess::ProcessError error)
 // Вывод стандартного вывода процесса в эмулятор консоли
 void CommandRunner::printOutput() const
 {
-    if (!m_process or !m_console)
+    if(!m_process || !m_console)
     {
         return;
     }

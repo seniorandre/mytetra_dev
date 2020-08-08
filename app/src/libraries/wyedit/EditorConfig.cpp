@@ -1040,7 +1040,7 @@ QString EditorConfig::update_version_change_value(int versionFrom,
         }
 
     if(versionFrom==20 && versionTo==21)
-        if(name=="tools_line_1" or name=="tools_line_2")
+        if(name=="tools_line_1" || name=="tools_line_2")
         {
             if(result.contains("fontselect"))
             {
@@ -1049,7 +1049,7 @@ QString EditorConfig::update_version_change_value(int versionFrom,
         }
 
     if(versionFrom==21 && versionTo==22)
-        if(name=="tools_line_1" or name=="tools_line_2")
+        if(name=="tools_line_1" || name=="tools_line_2")
         {
             QMap<QString, QString> names;
 
