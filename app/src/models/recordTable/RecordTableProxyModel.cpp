@@ -1,4 +1,5 @@
 #include <QSortFilterProxyModel>
+#include <QDebug>
 
 #include "main.h"
 #include "RecordTableProxyModel.h"
@@ -14,6 +15,16 @@ RecordTableProxyModel::RecordTableProxyModel(QObject *pobj) : QSortFilterProxyMo
 // Деструктор модели
 RecordTableProxyModel::~RecordTableProxyModel()
 {
- return;
+    return;
+}
+
+
+bool RecordTableProxyModel::removeRow(int row, const QModelIndex &parent)
+{
+    qDebug() << Q_FUNC_INFO << " row: " << row;
+
+    bool result=QSortFilterProxyModel::removeRow(row, parent);
+
+    return result;
 }
 

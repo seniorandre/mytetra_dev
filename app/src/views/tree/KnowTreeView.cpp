@@ -9,6 +9,8 @@
 #include "libraries/ClipboardRecords.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/FixedParameters.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/helpers/GestureHelper.h"
 #include "models/tree/KnowTreeModel.h"
 #include "models/recordTable/RecordTableData.h"
 #include "models/tree/TreeItem.h"
@@ -33,7 +35,7 @@ KnowTreeView::KnowTreeView(QWidget *parent) : QTreeView(parent)
  grabGesture(Qt::TapAndHoldGesture);
 
  // Настройка области виджета для кинетической прокрутки
- setKineticScrollArea( qobject_cast<QAbstractItemView*>(this) );
+ GestureHelper::setKineticScrollArea( qobject_cast<QAbstractItemView*>(this) );
 }
 
 
@@ -199,10 +201,14 @@ void KnowTreeView::dropEvent(QDropEvent *event)
      // Полные данные записи
      Record record=clipboardRecords->getRecord(i);
 
+     qDebug() << " Before delete, cursor at row: " << recordTableController->getView()->currentIndex().row();
+
      // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
      // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
      // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
      recordTableController->removeRowById( record.getField("id") );
+
+     qDebug() << " After delete, cursor at row: " << recordTableController->getView()->currentIndex().row();
 
      // Если после удаления перемещаемой записи в таблице остались еще какие-то записи
      if(recordTableController->getRowCount()>0)
@@ -225,7 +231,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
      find_object<RecordTableScreen>("recordTableScreen")->toolsUpdate();
 
      // Добавление записи в базу
-     recordTableData->insertNewRecord(ADD_NEW_RECORD_TO_END,
+     recordTableData->insertNewRecord(GlobalParameters::AddNewRecordBehavior::ADD_TO_END,
                                       0,
                                       record);
 

@@ -4,38 +4,60 @@
 #include <QDialog>
 #include <QTextEdit>
 #include <QEvent>
+#include <QCloseEvent>
+
+//! \brief
+//! Класс открепляемого окна для просмотра текста записи без возможности редактирования
 
 
-// Класс отдельного (открепляемого) окна для просмотра текста записи без возможности редактирования
+class EditorShowTextContextMenu;
+
 class EditorShowText : public QDialog
 {
-  Q_OBJECT
+    Q_OBJECT
 public:
-  explicit EditorShowText(QWidget *parent = nullptr);
-  virtual ~EditorShowText();
+    explicit EditorShowText(QWidget *parent = nullptr, Qt::WindowFlags f=Qt::WindowFlags());
+    virtual ~EditorShowText();
 
-  void setHtml(QString text);
-  void setDocument(QTextDocument *document);
+    void setNoteId(const QString &noteId);
+    void setHtml(QString text);
+    void setDocument(QSharedPointer<QTextDocument> pDocument);
+
+    bool hasTextSelection();
+
+    int getTextVerticalScroll();
+    void setTextVerticalScroll(int vScroll);
+
+    // Действия при закрытии диалога
+    void closeEvent(QCloseEvent *event);
 
 signals:
 
-public slots:
+    void editorShowTextClose(const QString &noteId);
+
+protected slots:
+
+    void onCustomContextMenuRequested(const QPoint &pos);
+    void onGotoNote();
 
 private:
 
- QTextEdit *textArea;
+    QString mNoteId;
+    QSharedPointer<QTextEdit> mTextArea;
+    QSharedPointer<QTextDocument> mTextDocument;
+    QSharedPointer<EditorShowTextContextMenu> mContextMenu;
 
- int geomX;
- int geomY;
- int geomW;
- int geomH;
+    int mGeomX=0;
+    int mGeomY=0;
+    int mGeomW=0;
+    int mGeomH=0;
 
- void setupUi(void);
- void setupSignals(void);
- void assembly(void);
+    void setupUi(void);
+    void setupSignals(void);
+    void assembly(void);
 
- void hideEvent(QHideEvent *event);
- void showEvent(QShowEvent *event);
+    void hideEvent(QHideEvent *event);
+    void showEvent(QShowEvent *event);
 };
 
 #endif // EDITORSHOWTEXT_H

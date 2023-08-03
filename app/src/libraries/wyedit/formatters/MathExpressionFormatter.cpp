@@ -18,9 +18,11 @@
 #include "../EditorMathExpressionDialog.h"
 
 #include "main.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
 #include "libraries/FixedParameters.h"
 #include "views/consoleEmulator/CommandRun.h"
+#include "libraries/helpers/DebugHelper.h"
+#include "libraries/helpers/UniqueIdHelper.h"
 
 
 MathExpressionFormatter::MathExpressionFormatter()

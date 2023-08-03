@@ -12,6 +12,7 @@
 #include "main.h"
 #include "libraries/ActionLogger.h"
 #include "libraries/GlobalParameters.h"
+#include "libraries/helpers/ObjectHelper.h"
 
 extern ActionLogger actionLogger;
 extern GlobalParameters globalParameters;
@@ -157,6 +158,8 @@ void CommandRun::removeProcessAndConsole(void)
     // Удаление консоли
     if(m_console)
     {
+        m_console->hide();
+
         // Т. к. данный метод может быть вызван из самой консоли (через сигнал cancelConsole),
         // то конструкцию delete m_console использовать нельзя
         m_console->deleteLater();

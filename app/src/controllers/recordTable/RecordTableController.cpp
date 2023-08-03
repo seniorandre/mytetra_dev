@@ -24,7 +24,9 @@
 #include "libraries/WindowSwitcher.h"
 #include "libraries/WalkHistory.h"
 #include "libraries/ClipboardRecords.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/wyedit/EditorShowTextDispatcher.h"
 
 
 extern GlobalParameters globalParameters;
@@ -49,6 +51,10 @@ RecordTableController::RecordTableController(QObject *parent) : QObject(parent)
 
   // Модель данных задается для вида
   view->setModel(recordProxyModel);
+
+  connect(this, &RecordTableController::doCloseDetachedWindowsByIdVector,
+          EditorShowTextDispatcher::instance(), &EditorShowTextDispatcher::closeWindowByIdVector,
+          Qt::QueuedConnection);
 }
 
 
@@ -517,7 +523,7 @@ void RecordTableController::paste(void)
 
   // Пробегаются все записи в буфере
   for(int i=0;i<nList;i++)
-    addNew(ADD_NEW_RECORD_TO_END, clipboardRecords->getRecord(i));
+    addNew(GlobalParameters::AddNewRecordBehavior::ADD_TO_END, clipboardRecords->getRecord(i));
 
   // Обновление на экране ветки, на которой стоит засветка,
   // так как количество хранимых в ветке записей поменялось
@@ -530,7 +536,7 @@ void RecordTableController::addNewToEndContext(void)
 {
   qDebug() << "In slot add_new_toend_context()";
 
-  addNewRecord(ADD_NEW_RECORD_TO_END);
+  addNewRecord(GlobalParameters::AddNewRecordBehavior::ADD_TO_END);
 }
 
 
@@ -539,7 +545,7 @@ void RecordTableController::addNewBeforeContext(void)
 {
   qDebug() << "In slot add_new_before_context()";
 
-  addNewRecord(ADD_NEW_RECORD_BEFORE);
+  addNewRecord(GlobalParameters::AddNewRecordBehavior::ADD_BEFORE);
 }
 
 
@@ -548,7 +554,7 @@ void RecordTableController::addNewAfterContext(void)
 {
   qDebug() << "In slot add_new_after_context()";
 
-  addNewRecord(ADD_NEW_RECORD_AFTER);
+  addNewRecord(GlobalParameters::AddNewRecordBehavior::ADD_AFTER);
 }
 
 
@@ -601,26 +607,29 @@ void RecordTableController::addNewRecord(int mode)
 // Принимает полный формат записи
 void RecordTableController::addNew(int mode, Record record)
 {
-  qDebug() << "In add_new()";
+    qDebug() << "In add_new()";
 
-  // Получение Source-индекса первой выделенной строки
-  QModelIndex posIndex=view->getFirstSelectionSourceIndex();
+    // Получение Source-индекса первой выделенной строки
+    QModelIndex posIndex=view->getFirstSelectionSourceIndex();
 
-  // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-  int selPos=recordSourceModel->addTableData(mode,
-                                             posIndex,
-                                             record);
+    // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
+    int selPos=recordSourceModel->addTableData(mode,
+                                               posIndex,
+                                               record);
 
-  view->moveCursorToNewRecord(mode, convertSourcePosToProxyPos(selPos) );
+    if(selPos>=0)
+    {
+        view->moveCursorToNewRecord(mode, convertSourcePosToProxyPos(selPos) );
 
-  // Сохранение дерева веток
-  find_object<TreeScreen>("treeScreen")->saveKnowTree();
+        // Сохранение дерева веток
+        find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    }
 }
 
 
 void RecordTableController::onEditFieldContext(void)
 {
-  view->editFieldContext();
+    view->editFieldContext();
 }
 
 
@@ -809,6 +818,7 @@ void RecordTableController::deleteRecords(void)
     }
   }
 
+
   // Массив удаляемых номеров строк (в Proxy-нумерации) сортируется так чтоб вначале были индексы с наибольшим номером
   std::sort(delRows.begin(), delRows.end(), std::greater<int>());
   int lastRowNum=delRows[0]; // Максимальный номер удаляемой строки
@@ -820,6 +830,9 @@ void RecordTableController::deleteRecords(void)
 
   // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
   find_object<MetaEditor>("editorScreen")->clearAll();
+
+  // Вызывается закрытие открепляемых окон для удаляемых записей
+  emit doCloseDetachedWindowsByIdVector(delIds);
 
   // Вызывается удаление отмеченных записей
   removeRowsByIdList(delIds);

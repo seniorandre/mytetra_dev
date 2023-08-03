@@ -5,6 +5,8 @@
 #include "EditorConfig.h"
 #include "main.h"
 #include "views/mainWindow/MainWindow.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/helpers/UniqueIdHelper.h"
 
 
 EditorMathExpressionDialog::EditorMathExpressionDialog(MathExpressionFormatter *mathExpressionFormatter, QWidget *parent) : QDialog(parent)
@@ -20,11 +22,13 @@ EditorMathExpressionDialog::EditorMathExpressionDialog(MathExpressionFormatter *
 
     // Задание размеров диалога
     setMinimumHeight(
-        int( 0.5 * static_cast<double>(find_object<MainWindow>("mainwindow")->height()) )
+        int( 0.25 * static_cast<double>(find_object<MainWindow>("mainwindow")->height()) )
     );
     setMinimumWidth(
-        int( 0.5 * static_cast<double>(find_object<MainWindow>("mainwindow")->width()) )
+        int( 0.25 * static_cast<double>(find_object<MainWindow>("mainwindow")->width()) )
     );
+
+    // todo: переделать на восстановление запомненных размеров и положения диалога
     resize(QGuiApplication::primaryScreen()->availableSize() / 2);
 
     // Класс для работы с математическими выражениями

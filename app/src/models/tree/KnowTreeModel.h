@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QtXml>
 #include <QXmlStreamWriter>
+#include <QSet>
 
 #include "TreeModel.h"
 
@@ -75,10 +76,18 @@ public:
     Record *getRecord(const QString &recordId);
 
     // Проверка наличия идентификатора ветки во всем дереве
-    bool isItemIdExists(QString findId);
+    bool isItemIdExists(QString findId) const;
 
     // Проверка наличия идентификатора записи во всем дереве
-    bool isRecordIdExists(QString findId);
+    bool isRecordIdExists(QString findId) const;
+
+    // Получение списка всех идентификаторов записей в ветке и ее подветках
+    QSharedPointer< QSet<QString> > getRecordsIdList(TreeItem *item) const;
+
+    // Получение списка всех идентификаторов записей в базе
+    QSharedPointer< QSet<QString> > getAllRecordsIdList() const;
+
+    void deleteItemsByModelIndexList(QModelIndexList &selectItems);
 
     // Выгрузка ветки и всех подветок в директорию в виде отдельной базы MyTetra (экспорт)
     bool exportBranchToDirectory(TreeItem *startItem, QString exportDir);
@@ -90,6 +99,11 @@ public:
     QDateTime getLastLoadDateTime();
 
     QString getXmlFileName() const;
+
+
+signals:
+
+    void doCloseDetachedWindowByIdSet( QSet<QString> ids );
 
 private:
 
@@ -143,12 +157,17 @@ private:
                                      const QString &recordId,
                                      int mode);
 
-    bool isItemIdExistsRecurse(TreeItem *item, QString findId, int mode);
+    bool isItemIdExistsRecurse(TreeItem *item, QString findId, int mode) const;
 
-    bool isRecordIdExistsRecurse(TreeItem *item, QString findId, int mode);
+    bool isRecordIdExistsRecurse(TreeItem *item, QString findId, int mode) const;
 
-    bool isRecordDirExists(QString findDir);
-    bool isRecordDirExistsRecurse(TreeItem *item, QString findDir, int mode);
+    void getAllRecordsIdListRecurse(TreeItem *item, QSet<QString> *ids) const;
+
+    // Удаление одной ветки и её подветок
+    void deleteOneBranch(QModelIndex index);
+
+    bool isRecordDirExists(QString findDir) const;
+    bool isRecordDirExistsRecurse(TreeItem *item, QString findDir, int mode) const;
 
     bool checkFormat(QDomElement elementFormat);
 

@@ -20,6 +20,7 @@
 #include "views/installDialog/InstallDialog.h"
 #include "libraries/WindowSwitcher.h"
 #include "libraries/FixedParameters.h"
+#include "libraries/helpers/DebugHelper.h"
 
 #ifdef Q_OS_WIN32
 #include "windows.h"
@@ -382,7 +383,7 @@ bool GlobalParameters::isMytetraIniConfig(QString fileName)
    // Открывается хранилище настроек
    // todo: Странность в Qt - если указать третьим параметром this в качестве
    // родителя, то считывание из файла конфигурации работать не будет. Разобраться
-   QSettings *conf=new QSettings(fileName, QSettings::IniFormat);
+   QScopedPointer<QSettings> conf( new QSettings(fileName, QSettings::IniFormat) );
 
    // Если есть переменная version
    if(conf->contains("version"))

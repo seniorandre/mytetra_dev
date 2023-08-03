@@ -16,9 +16,14 @@
 #include "views/tree/TreeScreen.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/crypt/CryptService.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/FixedParameters.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/helpers/MessageHelper.h"
+#include "libraries/helpers/UniqueIdHelper.h"
+#include "libraries/helpers/SortHelper.h"
+#include "libraries/wyedit/EditorShowTextDispatcher.h"
 
 
 extern AppConfig mytetraConfig;
@@ -29,7 +34,11 @@ extern GlobalParameters globalParameters;
 KnowTreeModel::KnowTreeModel(QObject *parent) : TreeModel(parent)
 {
   xmlFileName="";
-  rootItem=NULL;
+  rootItem=nullptr;
+
+  connect(this, &KnowTreeModel::doCloseDetachedWindowByIdSet,
+          EditorShowTextDispatcher::instance(), &EditorShowTextDispatcher::closeWindowByIdSet,
+          Qt::QueuedConnection);
 }
 
 
@@ -63,7 +72,6 @@ void KnowTreeModel::init(QDomDocument *domModel)
   if( !checkFormat(domModel->documentElement().firstChildElement("format")) )
   {
     criticalError(tr("Unsupported version of the database format.\nYou need to update MyTetra."));
-    return;
   }
 
 
@@ -77,7 +85,7 @@ void KnowTreeModel::init(QDomDocument *domModel)
   beginResetModel();
 
   // Создание корневого Item объекта
-  if(rootItem!=NULL)
+  if(rootItem!=nullptr)
     delete rootItem;
   rootItem = new TreeItem(rootData);
 
@@ -1000,7 +1008,7 @@ int KnowTreeModel::getAllRecordCountRecurse(TreeItem *item, int mode)
 
 
 // Проверка наличия идентификатора ветки во всем дереве
-bool KnowTreeModel::isItemIdExists(QString findId)
+bool KnowTreeModel::isItemIdExists(QString findId) const
 {
   // Обнуление счетчика
   isItemIdExistsRecurse(rootItem, findId, 0);
@@ -1009,7 +1017,7 @@ bool KnowTreeModel::isItemIdExists(QString findId)
 }
 
 
-bool KnowTreeModel::isItemIdExistsRecurse(TreeItem *item, QString findId, int mode)
+bool KnowTreeModel::isItemIdExistsRecurse(TreeItem *item, QString findId, int mode) const
 {
   static bool isExists=false;
 
@@ -1040,16 +1048,16 @@ bool KnowTreeModel::isItemIdExistsRecurse(TreeItem *item, QString findId, int mo
 
 
 // Проверка наличия идентификатора записи во всем дереве
-bool KnowTreeModel::isRecordIdExists(QString findId)
+bool KnowTreeModel::isRecordIdExists(QString findId) const
 {
-  // Обнуление счетчика
+  // Обнуление флага наличия записи с указанным ID
   isRecordIdExistsRecurse(rootItem, findId, 0);
 
   return isRecordIdExistsRecurse(rootItem, findId, 1);
 }
 
 
-bool KnowTreeModel::isRecordIdExistsRecurse(TreeItem *item, QString findId, int mode)
+bool KnowTreeModel::isRecordIdExistsRecurse(TreeItem *item, QString findId, int mode) const
 {
   static bool isExists=false;
 
@@ -1079,8 +1087,135 @@ bool KnowTreeModel::isRecordIdExistsRecurse(TreeItem *item, QString findId, int 
 }
 
 
+// Получение списка всех идентификаторов записей в ветке и ее подветках
+QSharedPointer< QSet<QString> > KnowTreeModel::getRecordsIdList(TreeItem *item) const
+{
+    QSharedPointer< QSet<QString> > idListPointer( new QSet<QString> );
+
+    this->getAllRecordsIdListRecurse(item, idListPointer.data() );
+
+    return idListPointer;
+}
+
+
+// Получение списка всех идентификаторов записей в базе
+QSharedPointer< QSet<QString> > KnowTreeModel::getAllRecordsIdList() const
+{
+    QSharedPointer< QSet<QString> > idListPointer( new QSet<QString> );
+
+    this->getAllRecordsIdListRecurse(rootItem, idListPointer.data() );
+
+    return idListPointer;
+}
+
+
+void KnowTreeModel::getAllRecordsIdListRecurse(TreeItem *item, QSet<QString> *ids) const
+{
+    // Множество идентификаторов записей текущей ветки добавляется в итоговое множество
+    ids->unite( item->recordtableGetTableData()->getRecordsIdList() );
+
+    // Перебираются подветки
+    for(int i=0; i < item->childCount(); i++)
+      getAllRecordsIdListRecurse(item->child(i), ids);
+}
+
+
+void KnowTreeModel::deleteItemsByModelIndexList(QModelIndexList &selectItems)
+{
+    // Сортировка списка индексов по вложенности методом пузырька
+    // Индексы с длинным путем перемещаются в начало списка
+    for(int i = 0; i < selectItems.size(); i++)
+     for(int j=selectItems.size()-1; j>i; j--)
+      {
+       QStringList path_1=(this->getItem(selectItems.at(j-1)))->getPath();
+       QStringList path_2=(this->getItem(selectItems.at(j)))->getPath();
+       if(path_1.size() < path_2.size())
+           #if (QT_VERSION >= QT_VERSION_CHECK(5, 13, 0))
+           selectItems.swapItemsAt(j-1, j);
+           #else
+           selectItems.swap(j-1, j);
+           #endif
+      }
+
+    qDebug() << "Path for delete";
+    for(int i = 0; i < selectItems.size(); ++i)
+     qDebug() << (this->getItem(selectItems.at(i)))->getPath();
+
+    QSet< QString > deleteResordsId;
+
+    // Вызов удаления веток
+    for(int i = 0; i < selectItems.size(); ++i)
+    {
+        // Собирается список удаляемых записей, чтобы закрыть открепляемые окна
+        // у записей, которые были удалены
+        deleteResordsId.unite( *(this->getRecordsIdList(this->getItem(selectItems.at(i))).data()) );
+
+        this->deleteOneBranch(selectItems.at(i));
+    }
+
+    // Закрываются открепляемые окна для удаленных записей
+    emit doCloseDetachedWindowByIdSet( deleteResordsId );
+}
+
+
+// Удаление одной ветки и её подветок
+void KnowTreeModel::deleteOneBranch(QModelIndex index)
+{
+
+ if(!index.isValid())
+   return;
+
+ // Получение узла, который соответствует обрабатываемому индексу
+ TreeItem *item=this->getItem(index);
+
+ // qDebug() << "Delete tree item id:" << item->getField("id") << "name:" << item->getField("name");
+
+ // Получение пути к элементу
+ QStringList path=item->getPath();
+
+ // Получение путей ко всем подветкам
+ QList<QStringList> subbranchespath=item->getAllChildrenPath();
+
+ // Сортировка массива веток по длине пути
+ std::sort(subbranchespath.begin(), subbranchespath.end(), compareQStringListLen);
+
+ // Удаление всех таблиц конечных записей для нужных подветок
+ // Удаление всех подчиненных элементов для нужных подветок
+ // Вначале пробегаются самые длинные ветки а потом более короткие
+ for(int i=subbranchespath.size()-1;i>=0;i--)
+ {
+  qDebug() << "Delete subbranch, id:" << this->getItem(subbranchespath.at(i))->getField("id") << "name:" << this->getItem(subbranchespath.at(i))->getField("name");
+  ( this->getItem(subbranchespath.at(i)) )->recordtableDeleteAllRecords();
+  // ( knowTreeModel->getItem(subbranchespath.at(i)) )->removeAllChildren(); // Команда действительно не нужна. Далее в removeRows() вызывается removeChildren()
+ }
+
+ // Удаление таблицы конечных записей для самой удаляемой ветки
+ // Удаление подчиненных элементов для самой удаляемой ветки
+ qDebug() << "Delete rootbranch, id:" << this->getItem(path)->getField("id") << "name:" << this->getItem(path)->getField("name");
+ ( this->getItem(path) )->recordtableDeleteAllRecords();
+ // ( knowTreeModel->getItem(path) )->removeAllChildren(); // Команда действительно не нужна. Далее в removeRows() вызывается removeChildren()
+
+ // Удаление ветки на экране, при этом удалятся все подветки
+ qDebug() << "This branch have row() as" << index.row();
+ if(index.isValid()) qDebug() << "Index valid";
+ else qDebug() << "Index non valid";
+ this->removeRows(index.row(), 1, index.parent());
+
+ /*
+ // Удаление всех нужных подветок
+ // Пробегаются самые длинные ветки а потом более короткие
+ for (int i=subbranchespath.size()-1;i>=0;i--)
+  if(knowTreeModel->isItemValid(subbranchespath.at(i)))
+   {
+    TreeItem *current_item=knowTreeModel->getItem(subbranchespath.at(i));
+    delete current_item;
+   }
+ */
+}
+
+
 // Проверка наличия имени директории записи во всем дереве
-bool KnowTreeModel::isRecordDirExists(QString findDir)
+bool KnowTreeModel::isRecordDirExists(QString findDir) const
 {
   // Обнуление счетчика
   isRecordDirExistsRecurse(rootItem, findDir, 0);
@@ -1089,7 +1224,7 @@ bool KnowTreeModel::isRecordDirExists(QString findDir)
 }
 
 
-bool KnowTreeModel::isRecordDirExistsRecurse(TreeItem *item, QString findDir, int mode)
+bool KnowTreeModel::isRecordDirExistsRecurse(TreeItem *item, QString findDir, int mode) const
 {
   static bool isExists=false;
 
@@ -1179,7 +1314,7 @@ QString KnowTreeModel::pasteSubbranchRecurse(TreeItem *item,
   foreach(Record record, records)
   {
     qDebug() << "Add table record "+record.getField("name");
-    newitem->recordtableGetTableData()->insertNewRecord(ADD_NEW_RECORD_TO_END,
+    newitem->recordtableGetTableData()->insertNewRecord(GlobalParameters::AddNewRecordBehavior::ADD_TO_END,
                                                         0,
                                                         record);
   }
@@ -1243,7 +1378,7 @@ void KnowTreeModel::reEncrypt(QString previousPassword, QString currentPassword)
 TreeItem *KnowTreeModel::getItemById(const QString &id)
 {
     // Инициализация поиска
-    getItemByIdRecurse(rootItem, 0, 0);
+    getItemByIdRecurse(rootItem, "", 0);
 
     // Запуск поиска и возврат результата
     return getItemByIdRecurse(rootItem, id, 1);
@@ -1252,15 +1387,15 @@ TreeItem *KnowTreeModel::getItemById(const QString &id)
 
 TreeItem *KnowTreeModel::getItemByIdRecurse(TreeItem *item, const QString &id, int mode)
 {
-    static TreeItem *findItem=NULL;
+    static TreeItem *findItem=nullptr;
 
     if(mode==0)
     {
-        findItem=NULL;
-        return NULL;
+        findItem=nullptr;
+        return nullptr;
     }
 
-    if(findItem!=NULL)
+    if(findItem!=nullptr)
     {
         return findItem;
     }

@@ -14,6 +14,7 @@
 #include "../EditorToolBarAssistant.h"
 #include "../EditorCursorPositionDetector.h"
 #include "../../TraceLogger.h"
+#include "libraries/helpers/MessageHelper.h"
 
 
 TypefaceFormatter::TypefaceFormatter()
@@ -269,6 +270,7 @@ void TypefaceFormatter::onCodeClicked(void)
         return;
 
     textArea->textCursor().beginEditBlock();
+    // Далее при любом выходе из метода нужно вызывать textArea->textCursor().endEditBlock()
 
     // Обработка мягкого переноса в выделенном тексте
     // Учитываются мягкие переносы до выделенного текста (1-й символ до выделения) и в выделенных абзацах
@@ -299,8 +301,12 @@ void TypefaceFormatter::onCodeClicked(void)
 
         if(blockStart<=selectStart && blockStop>=selectStop)
             enableIndent=false; // Выбран кусок текста в пределах блока
-        else
+        else{
+            qDebug() << "The selection is outside one block";
+            //Хорошо бы писать в статусную строку сообщение, почему форматирование не выполнено
+            textArea->textCursor().endEditBlock();
             return;
+        }
     }
     else
         enableIndent=true; // Выбран четко блок (блоки) текста, нужно делать отступ

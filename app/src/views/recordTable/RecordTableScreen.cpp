@@ -16,6 +16,8 @@
 #include "libraries/FixedParameters.h"
 #include "controllers/recordTable/RecordTableController.h"
 #include "libraries/ShortcutManager.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/helpers/ActionHelper.h"
 
 
 extern GlobalParameters globalParameters;

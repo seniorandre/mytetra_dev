@@ -76,6 +76,8 @@ public:
  void restoreFindOnBaseVisible(void);
  void restoreAllWindowState(void);
 
+ void restoreDockableWindowsState(void);
+
  void setTreePosition(QStringList path);
  bool isTreePositionCrypt();
 
@@ -96,6 +98,8 @@ signals:
 
  void globalPressKey(int key);
  void globalReleaseKey(int key);
+
+ void doUpdateDetachedWindows();
 
 public slots:
  void applicationExit(void);
@@ -214,7 +218,7 @@ protected:
  void goWalkHistory(void);
 
  bool enableRealClose;
-
+ int exitCounter=0;
  
 };
 #endif

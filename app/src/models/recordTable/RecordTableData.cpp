@@ -16,10 +16,13 @@
 #include "models/tree/KnowTreeModel.h"
 #include "views/tree/KnowTreeView.h"
 #include "libraries/crypt/CryptService.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
 #include "libraries/ActionLogger.h"
 
 #include "libraries/wyedit/Editor.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/helpers/UniqueIdHelper.h"
+
 
 extern AppConfig mytetraConfig;
 extern GlobalParameters globalParameters;
@@ -278,6 +281,19 @@ Record *RecordTableData::getRecordById(const QString &id)
 }
 
 
+QSet<QString> RecordTableData::getRecordsIdList()
+{
+    QSet<QString> ids;
+
+    for( auto record : tableData)
+    {
+        ids << record.getField("id");
+    }
+
+    return ids;
+}
+
+
 // Инициализация таблицы данных на основе переданного DOM-элемента
 void RecordTableData::init(TreeItem *item, QDomElement iDomElement)
 {
@@ -367,9 +383,9 @@ void RecordTableData::exportDataToStreamWriter(QXmlStreamWriter *xmlWriter) cons
 // сохраняет текст файла и обновляет данные на экране.
 // Сохранения дерева XML-данных на диск в этом методе нет.
 // Допустимые режимы:
-// ADD_NEW_RECORD_TO_END - в конец списка, pos игнорируется
-// ADD_NEW_RECORD_BEFORE - перед указанной позицией, pos - номер позиции
-// ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
+// ADD_TO_END - в конец списка, pos игнорируется
+// ADD_BEFORE - перед указанной позицией, pos - номер позиции
+// ADD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
 int RecordTableData::insertNewRecord(int mode,
@@ -439,17 +455,17 @@ int RecordTableData::insertNewRecord(int mode,
 
     // Запись добавляется в таблицу конечных записей
     int insertPos=-1;
-    if(mode==ADD_NEW_RECORD_TO_END) // В конец списка
+    if(mode==GlobalParameters::AddNewRecordBehavior::ADD_TO_END) // В конец списка
     {
         tableData << record;
         insertPos=tableData.size()-1;
     }
-    else if(mode==ADD_NEW_RECORD_BEFORE) // Перед указанной позицией
+    else if(mode==GlobalParameters::AddNewRecordBehavior::ADD_BEFORE) // Перед указанной позицией
     {
         tableData.insert(pos, record);
         insertPos=pos;
     }
-    else if(mode==ADD_NEW_RECORD_AFTER) // После указанной позиции
+    else if(mode==GlobalParameters::AddNewRecordBehavior::ADD_AFTER) // После указанной позиции
     {
         tableData.insert(pos+1, record);
         insertPos=pos+1;

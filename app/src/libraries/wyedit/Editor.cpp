@@ -34,7 +34,8 @@
 #include "../../main.h"
 #include "../../views/mainWindow/MainWindow.h"
 #include "../TraceLogger.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
+#include "libraries/helpers/ObjectHelper.h"
 
 
 // Максимально возможная длина выделения текста (в символах) при которой
@@ -72,6 +73,7 @@ Editor::~Editor(void)
   delete tableFormatter;
   delete imageFormatter;
   delete mathExpressionFormatter;
+  delete referenceFormatter;
 }
 
 
@@ -878,6 +880,9 @@ void Editor::saveTextarea(void)
       saveCallbackFunc(qobject_cast<QObject *>(this), content);
     }
 
+    // Обновляется открепляемое окно с текстом записи, если таковое открыто
+    EditorShowTextDispatcher::instance()->updateWindow( this->getMiscField("id") );
+
     // Так как произошло сохранение,
     // отмечается что новый текст небыл еще изменен
     setTextareaModified(false);
@@ -917,6 +922,9 @@ bool Editor::loadTextarea()
   // Если происходит прямая работа с файлом текста
   if(loadCallbackFunc==nullptr)
   {
+    // Данная часть кода в MyTetra не используется, т. к. всегда задана callback-функция
+    // для считывания текста записи (т.к. запись может быть и открытой и зашифрованной)
+
     // Создается объект файла с нужным именем
     QFile f(fileName);
 

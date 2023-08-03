@@ -139,13 +139,28 @@ INSTALLS+=icon_48_file
 
 HEADERS = src/main.h \
     src/libraries/RandomInitter.h \
+    src/libraries/helpers/ActionHelper.h \
+    src/libraries/helpers/ConfigEditorHelper.h \
+    src/libraries/helpers/CssHelper.h \
+    src/libraries/helpers/DebugHelper.h \
+    src/libraries/helpers/DiskHelper.h \
+    src/libraries/helpers/GestureHelper.h \
+    src/libraries/helpers/HtmlHelper.h \
+    src/libraries/helpers/MessageHelper.h \
+    src/libraries/helpers/ObjectHelper.h \
+    src/libraries/helpers/ScreenHelper.h \
+    src/libraries/helpers/SortHelper.h \
+    src/libraries/helpers/UniqueIdHelper.h \
     src/libraries/wyedit/EditorConfigMathExpression.h \
     src/libraries/wyedit/EditorFontToolFocus.h \
+    src/libraries/wyedit/EditorShowTextContextMenu.h \
     src/libraries/wyedit/EditorShowTextDispatcher.h \
     src/libraries/wyedit/mvc/models/editorToolbarSettings/EditorToolbarSettingsAbstractModel.h \
     src/libraries/wyedit/mvc/models/editorToolbarSettings/EditorToolbarSettingsAvailableToolsModel.h \
     src/libraries/wyedit/mvc/models/editorToolbarSettings/EditorToolbarSettingsUsedToolsModel.h \
     src/libraries/wyedit/mvc/views/editorToolbarSettings/EditorToolbarCommandsListView.h \
+    src/views/appConfigWindow/AppConfigPage_Appearance.h \
+    src/views/appConfigWindow/AppConfigPage_History.h \
     src/views/consoleEmulator/CommandRun.h \
     src/views/installDialog/InstallDialog.h \
     src/views/recordTable/RecordTableScreen.h \
@@ -209,7 +224,6 @@ HEADERS = src/main.h \
     src/views/dialog/ReduceMessageBox.h \
     src/views/dialog/OverTextToolButton.h \
     src/libraries/crypt/CryptService.h \
-    src/libraries/DiskHelper.h \
     src/libraries/wyedit/EditorToolBar.h \
     src/libraries/wyedit/formatters/TypefaceFormatter.h \
     src/libraries/wyedit/formatters/Formatter.h \
@@ -282,13 +296,28 @@ HEADERS+=\
 
 SOURCES = src/main.cpp \
     src/libraries/RandomInitter.cpp \
+    src/libraries/helpers/ActionHelper.cpp \
+    src/libraries/helpers/ConfigEditorHelper.cpp \
+    src/libraries/helpers/CssHelper.cpp \
+    src/libraries/helpers/DebugHelper.cpp \
+    src/libraries/helpers/DiskHelper.cpp \
+    src/libraries/helpers/GestureHelper.cpp \
+    src/libraries/helpers/HtmlHelper.cpp \
+    src/libraries/helpers/MessageHelper.cpp \
+    src/libraries/helpers/ObjectHelper.cpp \
+    src/libraries/helpers/ScreenHelper.cpp \
+    src/libraries/helpers/SortHelper.cpp \
+    src/libraries/helpers/UniqueIdHelper.cpp \
     src/libraries/wyedit/EditorConfigMathExpression.cpp \
     src/libraries/wyedit/EditorFontToolFocus.cpp \
+    src/libraries/wyedit/EditorShowTextContextMenu.cpp \
     src/libraries/wyedit/EditorShowTextDispatcher.cpp \
     src/libraries/wyedit/mvc/models/editorToolbarSettings/EditorToolbarSettingsAbstractModel.cpp \
     src/libraries/wyedit/mvc/models/editorToolbarSettings/EditorToolbarSettingsAvailableToolsModel.cpp \
     src/libraries/wyedit/mvc/models/editorToolbarSettings/EditorToolbarSettingsUsedToolsModel.cpp \
     src/libraries/wyedit/mvc/views/editorToolbarSettings/EditorToolbarCommandsListView.cpp \
+    src/views/appConfigWindow/AppConfigPage_Appearance.cpp \
+    src/views/appConfigWindow/AppConfigPage_History.cpp \
     src/views/consoleEmulator/CommandRun.cpp \
     src/views/installDialog/InstallDialog.cpp \
     src/views/recordTable/RecordTableScreen.cpp \
@@ -352,7 +381,6 @@ SOURCES = src/main.cpp \
     src/views/dialog/ReduceMessageBox.cpp \
     src/views/dialog/OverTextToolButton.cpp \
     src/libraries/crypt/CryptService.cpp \
-    src/libraries/DiskHelper.cpp \
     src/libraries/wyedit/EditorToolBar.cpp \
     src/libraries/wyedit/formatters/TypefaceFormatter.cpp \
     src/libraries/wyedit/formatters/Formatter.cpp \

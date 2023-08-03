@@ -23,11 +23,13 @@ private:
     ConfigDialog *configDialog;
 
     QListWidgetItem *pageMain;
+    QListWidgetItem *pageAppearance;
     QListWidgetItem *pageCrypt;
     QListWidgetItem *pageSynchro;
     QListWidgetItem *pageRecordTable;
     QListWidgetItem *pageAttach;
     QListWidgetItem *pageKeyboard;
+    QListWidgetItem *pageHistory;
     QListWidgetItem *pageMisc;
 
     void changePage(QString name);

@@ -30,18 +30,12 @@ protected:
 
   QCheckBox *cutBranchConfirm;        // Требуется ли показывать предупреждение при вырезании ветки
   QCheckBox *printDebugMessages;      // Выводить ли в консоль отладочные сообщения
-  QCheckBox *runInMinimizedWindow;    // Разрешен ли запуск в свернутом окне
   QCheckBox *enableActionLog;         // Разрешено ли логирование действий
   QCheckBox *enableCreateEmptyRecord; // Разрешено ли создание записи, не содержащей текст (а только заголовок)
   QPushButton *editMyTetraConfigFile;
 
-  // Объединяющая рамка
-  QGroupBox *historyBox;
+  // Объединяющая рамка для блока с кнопкой редактирования конфиг-файла
   QGroupBox *dangerBox;
-
-  QCheckBox *rememberAtHistoryNavigationCheckBox;
-  QCheckBox *rememberAtOrdinarySelectionCheckBox;
-
 };
 
 

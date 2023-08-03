@@ -14,8 +14,9 @@
 #include "models/appConfig/AppConfig.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/wyedit/Editor.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
 #include "libraries/ShortcutManager.h"
+#include "libraries/helpers/DebugHelper.h"
 
 
 extern GlobalParameters globalParameters;

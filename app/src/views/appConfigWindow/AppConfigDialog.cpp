@@ -13,7 +13,11 @@
 #include "AppConfigPage_RecordTable.h"
 #include "AppConfigPage_Attach.h"
 #include "AppConfigPage_Keyboard.h"
+#include "AppConfigPage_History.h"
+#include "AppConfigPage_Appearance.h"
 #include "models/appConfig/AppConfig.h"
+#include "libraries/helpers/ScreenHelper.h"
+
 
 extern AppConfig mytetraConfig;
 
@@ -28,8 +32,8 @@ AppConfigDialog::AppConfigDialog(const QString &firstPageName, QWidget *parent)
 
     if(mytetraConfig.getInterfaceMode()=="mobile")
     {
-        qDebug() << "Screen size X Y: " << getScreenSizeX() << getScreenSizeY();
-        configDialog->setMinimumSize(getScreenSizeX(), getScreenSizeY());
+        qDebug() << "Screen size X Y: " << ScreenHelper::getSizeX() << ScreenHelper::getSizeY();
+        configDialog->setMinimumSize(ScreenHelper::getSizeX(), ScreenHelper::getSizeY());
         configDialog->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     }
 
@@ -37,6 +41,8 @@ AppConfigDialog::AppConfigDialog(const QString &firstPageName, QWidget *parent)
     // В качестве родителя надо указывать parent а не configDialog (разобраться почему)
     pageMain       =configDialog->addWidget(new AppConfigPage_Main( parent ),
                                             QObject::tr("Main"));
+    pageAppearance=configDialog->addWidget(new AppConfigPage_Appearance( parent ),
+                                            QObject::tr("Appearance"));
     pageCrypt      =configDialog->addWidget(new AppConfigPage_Crypt( parent ),
                                             QObject::tr("Crypt"));
     pageSynchro    =configDialog->addWidget(new AppConfigPage_Synchro( parent ),
@@ -47,6 +53,8 @@ AppConfigDialog::AppConfigDialog(const QString &firstPageName, QWidget *parent)
                                             QObject::tr("Attaches"));
     pageKeyboard   =configDialog->addWidget(new AppConfigPage_Keyboard( parent ),
                                             QObject::tr("Keyboard"));
+    pageHistory    =configDialog->addWidget(new AppConfigPage_History( parent ),
+                                            QObject::tr("History"));
     pageMisc       =configDialog->addWidget(new AppConfigPage_Misc( parent ),
                                             QObject::tr("Misc"));
 
@@ -81,11 +89,13 @@ void AppConfigDialog::changePage(QString name)
     QListWidgetItem *item=nullptr;
 
     if(name=="pageMain") item=pageMain;
+    if(name=="pageAppearance") item=pageAppearance;
     if(name=="pageCrypt") item=pageCrypt;
     if(name=="pageSynchro") item=pageSynchro;
     if(name=="pageRecordTable") item=pageRecordTable;
     if(name=="pageAttach") item=pageAttach;
     if(name=="pageKeyboard") item=pageKeyboard;
+    if(name=="pageHistory") item=pageHistory;
     if(name=="pageMisc") item=pageMisc;
 
     if(item!=nullptr)

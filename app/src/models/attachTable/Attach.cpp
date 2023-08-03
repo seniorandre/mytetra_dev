@@ -10,7 +10,9 @@
 #include "models/recordTable/Record.h"
 #include "libraries/crypt/CryptService.h"
 #include "libraries/GlobalParameters.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
+#include "libraries/helpers/DebugHelper.h"
+#include "libraries/helpers/MessageHelper.h"
 
 extern GlobalParameters globalParameters;
 

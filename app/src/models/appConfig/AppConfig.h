@@ -250,6 +250,13 @@ public:
     bool getEnableCreateEmptyRecord(void);
     void setEnableCreateEmptyRecord(bool state);
 
+    // Список открепляемых окон с координатами окон
+    QString getDockableWindowsState(void);
+    void setDockableWindowsState(QString state);
+
+    QString getDockableWindowsBehavior(void);
+    void setDockableWindowsBehavior(QString mode);
+
 
 private:
 
@@ -299,7 +306,10 @@ private:
     QStringList get_parameter_table_33(bool withEndSignature=true);
     QStringList get_parameter_table_34(bool withEndSignature=true);
     QStringList get_parameter_table_35(bool withEndSignature=true);
-    
+    QStringList get_parameter_table_36(bool withEndSignature=true);
+    QStringList get_parameter_table_37(bool withEndSignature=true);
+    QStringList get_parameter_table_38(bool withEndSignature=true);
+
     bool is_init_flag;
 };
 

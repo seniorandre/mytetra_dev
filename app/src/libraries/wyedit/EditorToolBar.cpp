@@ -5,6 +5,8 @@
 #include "EditorToolBar.h"
 #include "Editor.h"
 #include "libraries/ShortcutManager.h"
+#include "libraries/helpers/DebugHelper.h"
+#include "libraries/helpers/ActionHelper.h"
 
 
 extern ShortcutManager shortcutManager;

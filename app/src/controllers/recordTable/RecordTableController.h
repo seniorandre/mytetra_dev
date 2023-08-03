@@ -61,6 +61,8 @@ public:
 
 signals:
 
+  void doCloseDetachedWindowsByIdVector(const QVector<QString> &ids);
+
 public slots:
 
   // Вызов действий для копирования записей в буфер обмена с удалением

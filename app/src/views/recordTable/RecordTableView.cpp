@@ -20,6 +20,9 @@
 #include "libraries/WindowSwitcher.h"
 #include "controllers/recordTable/RecordTableController.h"
 #include "libraries/ShortcutManager.h"
+#include "libraries/helpers/ObjectHelper.h"
+#include "libraries/helpers/GestureHelper.h"
+#include "libraries/helpers/CssHelper.h"
 
 
 extern GlobalParameters globalParameters;
@@ -36,7 +39,7 @@ RecordTableView::RecordTableView(QWidget *parent) : QTableView(parent)
  this->setSortingEnabled(false);
 
  // Настройка области виджета для кинетической прокрутки
- setKineticScrollArea( qobject_cast<QAbstractItemView*>(this) );
+ GestureHelper::setKineticScrollArea( qobject_cast<QAbstractItemView*>(this) );
 
  // Разрешение принимать жест QTapAndHoldGesture
  grabGesture(Qt::TapAndHoldGesture);
@@ -96,7 +99,7 @@ void RecordTableView::init(void)
  if(height!=0)
   verticalHeader()->setDefaultSectionSize( height );
  if(mytetraConfig.getInterfaceMode()=="mobile")
-  verticalHeader()->setDefaultSectionSize( static_cast<int>( getCalculateIconSizePx() ) );
+  verticalHeader()->setDefaultSectionSize( static_cast<int>( CssHelper::getCalculateIconSizePx() ) );
 
  setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -475,8 +478,8 @@ void RecordTableView::moveCursorToNewRecord(int mode, int pos)
   // Прокрутка к только что созданной строке через selectRow() показывает только
   // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
   // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-  if(mode==ADD_NEW_RECORD_TO_END ||
-    ( mode==ADD_NEW_RECORD_AFTER && pos>=(model()->rowCount()-1) ) )
+  if(mode==GlobalParameters::AddNewRecordBehavior::ADD_TO_END ||
+    ( mode==GlobalParameters::AddNewRecordBehavior::ADD_AFTER && pos>=(model()->rowCount()-1) ) )
     scrollToBottom();
 
   int proxyPos=controller->convertPosToProxyIndex(pos).row();
@@ -611,11 +614,18 @@ void RecordTableView::mouseMoveEvent(QMouseEvent *event)
 
         if(distance >= QApplication::startDragDistance())
         {
-            startDrag();
+            startDrag(); // Начинается перетаскивание
         }
     }
 
-    QTableView::mouseMoveEvent(event);
+    // При зажатых кнопках нельзя пробрасывать вызов родительского метода
+    // так как внутри него метасистема Qt может сгенерировать событие setSelection() и вызван слот
+    // selectionChanged() с выбором соседней строки, не той на которой был клик,
+    // при быстром движении мышкой
+    if( !( (event->buttons() & Qt::LeftButton) or (event->buttons() & Qt::RightButton) ) )
+    {
+        QTableView::mouseMoveEvent(event);
+    }
 }
 
 
@@ -746,6 +756,12 @@ void RecordTableView::selectionChanged(const QItemSelection &selected,
                                        const QItemSelection &deselected )
 {
     qDebug() << "RecordTableView::selectionChanged()";
+
+    // Отладка
+    for(auto index : selected.indexes())
+    {
+        qDebug() << "Select row: " << index.row();
+    }
 
     this->onSelectionChanged(selected, deselected);
 

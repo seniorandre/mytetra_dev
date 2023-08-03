@@ -10,7 +10,9 @@
 #include "libraries/GlobalParameters.h"
 #include "models/attachTable/AttachTableData.h"
 #include "libraries/crypt/CryptService.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/helpers/DiskHelper.h"
+#include "libraries/helpers/DebugHelper.h"
+
 
 extern AppConfig mytetraConfig;
 extern GlobalParameters globalParameters;
@@ -472,7 +474,7 @@ QString Record::getTextDirect() const
     criticalError("File "+fileName+" not readable. Check permission.");
 
   // Если незашифровано
-  if(fieldList.value("crypt").length()==0 ||fieldList.value("crypt")=="0")
+  if(fieldList.value("crypt").length()==0 || fieldList.value("crypt")=="0")
   {
     qDebug() << "Record::getTextDirect() : return direct data";
     return QString::fromUtf8( f.readAll() );
@@ -487,9 +489,27 @@ QString Record::getTextDirect() const
 }
 
 
-QTextDocument Record::getTextDocument() const
+// Тип QTextDocument является унаследованным от QObject, а QObject
+// нельзя передавать по значению, т.к. у него нет конструктора копирования,
+// поэтому возвращаться должен указатель на QTextDocument
+// std::unique_ptr<QTextDocument> Record::getTextDocument() const
+QSharedPointer<QTextDocument> Record::getTextDocument() const
+// QTextDocument* Record::getTextDocument() const
 {
+    const QString recordDirName=this->getFullDirName(); // Директория, где находится файл записи и картинки
 
+    QString content=this->getTextDirect(); // Содержимое файла
+
+    // Текстовый документ создается в куче, и функция вернет умный указатель на него
+    QSharedPointer<QTextDocument> textDocument(new QTextDocument());
+    // QTextDocument* textDocument(new QTextDocument());
+
+    // Устанавливается URL директории документа, с помощью него будут высчитываться
+    // относительные ссылки при загрузке картинок
+    textDocument->setMetaInformation(QTextDocument::DocumentUrl, "file:"+recordDirName+"/");
+    textDocument->setHtml( content );
+
+    return textDocument; // Возвращается умный указатель на текстовый документ в куче
 }
 
 

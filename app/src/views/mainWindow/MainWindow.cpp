@@ -23,8 +23,9 @@
 #include "views/actionLog/ActionLogScreen.h"
 #include "libraries/ShortcutManager.h"
 #include "libraries/RandomInitter.h"
-
+#include "libraries/helpers/ObjectHelper.h"
 #include "libraries/wyedit/EditorTextArea.h"
+#include "libraries/wyedit/EditorShowTextDispatcher.h"
 
 
 extern AppConfig mytetraConfig;
@@ -157,6 +158,11 @@ void MainWindow::setupSignals(void)
     connect(syncroCommandRun, &CommandRun::finishWork,
             this, &MainWindow::onSyncroCommandFinishWork);
 
+    // Связывание сигнала вызова обработки открепляемых окон на предмет того,
+    // что они отображают существующие записи
+    connect(this, &MainWindow::doUpdateDetachedWindows,
+            EditorShowTextDispatcher::instance(), &EditorShowTextDispatcher::closeWindowForNonExistentRecords,
+            Qt::QueuedConnection);
 
     // Обновление горячих клавиш, если они были изменены
     connect(&shortcutManager, &ShortcutManager::updateWidgetShortcut, this, &MainWindow::setupShortcuts);
@@ -462,13 +468,22 @@ void MainWindow::restoreFindOnBaseVisible(void)
 void MainWindow::restoreAllWindowState(void)
 {
     globalParameters.getWindowSwitcher()->disableSwitch();
+
     restoreFindOnBaseVisible();
     restoreWindowGeometry();
     restoreTreePosition();
     restoreRecordTablePosition();
     restoreEditorCursorPosition();
     restoreEditorScrollBarPosition();
+
     globalParameters.getWindowSwitcher()->enableSwitch();
+}
+
+
+void MainWindow::restoreDockableWindowsState()
+{
+    // Восстанавливаются открепляемые окна
+    EditorShowTextDispatcher::instance()->restoreOpenWindows();
 }
 
 
@@ -716,11 +731,16 @@ void MainWindow::applicationExit(void)
 {
     saveAllState();
 
-    // Если в конфиге настроено, что нужно синхронизироваться при выходе
+    // Если происходит первая инициализация выхода из программы
+    // И если в конфиге настроено, что нужно синхронизироваться при выходе
     // И задана команда синхронизации
-    if(mytetraConfig.get_synchroonexit())
-        if(mytetraConfig.get_synchrocommand().trimmed().length()>0)
-            synchronization();
+    if(enableRealClose==false)
+        if(mytetraConfig.get_synchroonexit())
+            if(mytetraConfig.get_synchrocommand().trimmed().length()>0)
+            {
+                enableRealClose=true;
+                synchronization(); // В конце синхронизации будет вызван слот onSyncroCommandFinishWork()
+            }
 
     // Запуск выхода из программы
     enableRealClose=true;
@@ -991,7 +1011,23 @@ void MainWindow::onSyncroCommandFinishWork()
     // что от предыдущей стадии была большая задержка
     reloadLoadStage(true);
 
+    // После того, как дерево перечитано, содержимое открепляемых окон обновляется,
+    // так как содержимое записей могло поменяться (т. к. получены новые изменения)
+    EditorShowTextDispatcher::instance()->updateAllWindows();
+
+    // Возможно, что после обновления имеются открепляемые окна, показывающие
+    // записи, которые были удалены при синхронизации. Такие окна должны быть закрыты.
+    // Проверка и закрытие таких окон делается в отдельном потоке, потому вызов
+    // делается через сингнал-слот
+    emit doUpdateDetachedWindows();
+
     actionLogger.addAction("stopSyncro");
+
+    // В конце синхронизации нужно проверить, не происходит ли выход из программы
+    if(enableRealClose==true)
+    {
+        this->applicationExit();
+    }
 }
 
 
@@ -1016,6 +1052,9 @@ void MainWindow::showWindow()
     activateWindow();
     showNormal();
     raise();
+
+    // Восстанавливается поведение открепляемых окон
+    EditorShowTextDispatcher::instance()->restoreBehavior();
 }
 
 
@@ -1102,7 +1141,10 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     if(enableRealClose==false)
     {
-        if(QSystemTrayIcon::isSystemTrayAvailable()==false) return;
+        if(QSystemTrayIcon::isSystemTrayAvailable()==false)
+        {
+            return;
+        }
 
         // При приходе события закрыть окно, событие игнорируется
         // и окно просто делается невидимым. Это нужно чтобы при закрытии окна
@@ -1111,8 +1153,32 @@ void MainWindow::closeEvent(QCloseEvent *event)
         {
             hide();
             event->ignore();
+            return;
         }
     }
+
+    // Здесь код оказывается если далее должно однозначно происходить закрытие программы
+
+    // Так как закрытие программы может происходить не с первого раза, например при
+    // настройке синхронизации при закрытии программы, то действия
+    // которые должны выполняться при закрытии должны срабатывать только единожды
+    if(exitCounter==0)
+    {
+        // Запоминается список и состояния открепляемых окон,
+        // данное действие нельзя делать в saveAllState(), вызываемое из деструктора, так как если
+        // все открепляемые окна не будут закрыты (см. следующею команду), то деструктор
+        // главного окна не будет вызываться объектом приложения
+        EditorShowTextDispatcher::instance()->saveOpenWindows();
+
+        // Закрытие открепляемых окон, даже если главное окно не является родителем для
+        // открепляемых окон, чтобы не осталось "висячих" открепляемых окон, которые
+        // не будут давать закрыться приложению
+        EditorShowTextDispatcher::instance()->closeAllWindowsForExit();
+
+        exitCounter++;
+    }
+
+    event->accept();
 }
 
 
