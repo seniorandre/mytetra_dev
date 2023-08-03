@@ -6,11 +6,11 @@ TARGET_OS=ANY_OS
 
 # Build type
 # "debug" or "release"
-BUILD_TYPE="release"
+BUILD_TYPE="debug"
 
 # Enable console for Windows
 # 0 - disable, 1 - enable (this is for compile mytetra.exe and rename to mytetra_debug.exe)
-WINDOWS_CONSOLE_ENABLE=0
+WINDOWS_CONSOLE_ENABLE=1
 
 # Profiling enable
 # 0 - disable, 1 - enable
@@ -25,12 +25,12 @@ message(Building running in Qt major version: $${QT_MAJOR_VERSION})
 
 # message(Value of QT_NO_SESSIONMANAGER is: $${QT_NO_SESSIONMANAGER})
 
-# Flags for profile application
-equals(PROFILING_ENABLE, 1) {
-  message(Enable profiling)
-  QMAKE_CXXFLAGS_DEBUG += -pg
-  QMAKE_LFLAGS_DEBUG += -pg
-}
+## Flags for profile application
+#equals(PROFILING_ENABLE, 1) {
+#  message(Enable profiling)
+#  QMAKE_CXXFLAGS_DEBUG += -pg
+#  QMAKE_LFLAGS_DEBUG += -pg
+#}
 
 # Enable C++14
 greaterThan(QT_MAJOR_VERSION, 4) {
@@ -92,7 +92,7 @@ INCLUDEPATH += $${_PRO_FILE_PWD_}/src
 contains(TARGET_OS, ANY_OS) {
   message(Building the any OS version...)
   SYSTEM_PROGRAM_NAME=mytetra
-  BINARY_INSTALL_PATH=/usr/local/bin
+  BINARY_INSTALL_PATH=build/install_mytetra
 }
 
 contains(TARGET_OS, MEEGO_OS){
@@ -161,6 +161,7 @@ HEADERS = src/main.h \
     src/libraries/wyedit/mvc/views/editorToolbarSettings/EditorToolbarCommandsListView.h \
     src/views/appConfigWindow/AppConfigPage_Appearance.h \
     src/views/appConfigWindow/AppConfigPage_History.h \
+    src/qt_old_fix.h \
     src/views/consoleEmulator/CommandRun.h \
     src/views/installDialog/InstallDialog.h \
     src/views/recordTable/RecordTableScreen.h \

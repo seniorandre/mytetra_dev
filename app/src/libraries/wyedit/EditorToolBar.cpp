@@ -75,7 +75,7 @@ QAction* EditorToolBar::generateAction(QIcon icon)
 
     int currentIndex=actions.size()-1;
 
-    actions[currentIndex]=new QAction();
+    actions[currentIndex]=new QAction(this);
     actions[currentIndex]->setIcon(icon);
 
     return actions[currentIndex];

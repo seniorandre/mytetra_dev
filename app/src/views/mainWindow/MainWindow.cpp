@@ -26,6 +26,8 @@
 #include "libraries/helpers/ObjectHelper.h"
 #include "libraries/wyedit/EditorTextArea.h"
 #include "libraries/wyedit/EditorShowTextDispatcher.h"
+#include "controllers/recordTable/RecordTableController.h"
+#include "models/recordTable/RecordTableModel.h"
 
 
 extern AppConfig mytetraConfig;
@@ -681,8 +683,59 @@ void MainWindow::filePrintPreview(void)
 void MainWindow::filePrintPdf(void)
 {
 #ifndef QT_NO_PRINTER
+
+    QPrinter printer(QPrinter::HighResolution);
+    printer.setFullPage(true);
+
+    // Делаем копию статьи для печати
+    QTextDocument doc;
+    doc.setHtml(editorScreen->getTextareaDocument()->toHtml());
+
+    // Получаем первый блок статьи
+    QTextBlock docStartBlock(doc.begin());
+    QTextCursor cursor(docStartBlock);
+
+    // Старт редактирования
+    cursor.beginEditBlock();
+    cursor.movePosition(QTextCursor::StartOfBlock);
+
+    // Создаем формат для заголовка статьи
+    QTextCharFormat captionFormat = docStartBlock.charFormat();
+    captionFormat.setFontWeight(QFont::Bold);
+    captionFormat.setFontPointSize(captionFormat.fontPointSize()+2);
+
+    // Получаем заголовок заголовок статьи
+    QString id = recordTableScreen->getFirstSelectionId();
+    // Указатель на контроллер таблицы конечных записей
+    RecordTableController *recordTableController=find_object<RecordTableController>("recordTableController");
+    QModelIndex midx = recordTableController->convertIdToSourceIndex(id);
+    // Указатель на модель таблицы конечных записей
+    RecordTableModel *rec_model = find_object<RecordTableModel>("recordSourceModel");
+    QString caption = rec_model->data(midx, Qt::DisplayRole).toString();
+    qDebug() << caption;
+
+    // Вставляем заголовок статьи
+    cursor.insertText(caption, captionFormat);
+
+    // Разделяем блок на две части, чтобы отделить заголовок от основного текста,
+    // а также вставляем лишний перевод строки.
+    cursor.insertBlock();
+    cursor.insertBlock();
+
+    //Очистка форматирования списками для двух новых блоков заголовка
+   QTextBlockFormat blockFmt = cursor.blockFormat();
+   blockFmt.setObjectIndex(-1);
+   cursor.movePosition(QTextCursor::PreviousBlock);
+   cursor.setBlockFormat(blockFmt);
+   cursor.movePosition(QTextCursor::PreviousBlock);
+   cursor.setBlockFormat(blockFmt);
+
+    // Завершаем редактирование
+    cursor.endEditBlock();
+
+    // Вывод в файл
     QString fileName = QFileDialog::getSaveFileName(this, "Export PDF",
-                                                    QString(), "*.pdf");
+                                                    "", "*.pdf");
     if (!fileName.isEmpty())
     {
         if(QFileInfo(fileName).suffix().isEmpty())
@@ -691,7 +744,7 @@ void MainWindow::filePrintPdf(void)
         QPrinter printer(QPrinter::HighResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(fileName);
-        editorScreen->getTextareaDocument()->print(&printer);
+        doc.print(&printer);
     }
 #endif
 }
@@ -1149,6 +1202,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         // При приходе события закрыть окно, событие игнорируется
         // и окно просто делается невидимым. Это нужно чтобы при закрытии окна
         // программа не завершала работу
+        trayIcon->show();
         if(trayIcon->isVisible())
         {
             hide();

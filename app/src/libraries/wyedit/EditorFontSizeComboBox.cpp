@@ -2,6 +2,7 @@
 #include <QtGlobal>
 
 #include "EditorFontSizeComboBox.h"
+#include "qt_old_fix.h"
 
 
 EditorFontSizeComboBox::EditorFontSizeComboBox(QWidget *parent) :
@@ -33,7 +34,7 @@ EditorFontSizeComboBox::EditorFontSizeComboBox(QWidget *parent) :
     this->setValidator(fontsizeValidator);
 
 
-    connect(this, qOverload<int>(&EditorFontSizeComboBox::currentIndexChanged),
+    connect(this, QOverload<int>::of(&EditorFontSizeComboBox::currentIndexChanged),
             this, &EditorFontSizeComboBox::onCurrentIndexChanged);
 }
 

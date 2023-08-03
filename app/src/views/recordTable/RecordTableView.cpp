@@ -622,7 +622,7 @@ void RecordTableView::mouseMoveEvent(QMouseEvent *event)
     // так как внутри него метасистема Qt может сгенерировать событие setSelection() и вызван слот
     // selectionChanged() с выбором соседней строки, не той на которой был клик,
     // при быстром движении мышкой
-    if( !( (event->buttons() & Qt::LeftButton) or (event->buttons() & Qt::RightButton) ) )
+    if( !( (event->buttons() & Qt::LeftButton) || (event->buttons() & Qt::RightButton) ) )
     {
         QTableView::mouseMoveEvent(event);
     }

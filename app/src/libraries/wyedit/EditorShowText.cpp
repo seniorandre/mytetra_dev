@@ -42,10 +42,10 @@ void EditorShowText::setupUi()
     mTextArea.reset(new QTextEdit(this));
 
     // Настраивается область редактора
-    mTextArea.get()->setAcceptRichText(true);
-    mTextArea.get()->setSizePolicy(sizePolicy);
-    mTextArea.get()->setReadOnly(true); // Показываемый текст можно только просматривать
-    mTextArea.get()->setContextMenuPolicy(Qt::CustomContextMenu); // Меню определяется в программе
+    mTextArea.data()->setAcceptRichText(true);
+    mTextArea.data()->setSizePolicy(sizePolicy);
+    mTextArea.data()->setReadOnly(true); // Показываемый текст можно только просматривать
+    mTextArea.data()->setContextMenuPolicy(Qt::CustomContextMenu); // Меню определяется в программе
 
     // Создается контекстное меню
     mContextMenu.reset( new EditorShowTextContextMenu(this) );
@@ -69,7 +69,7 @@ void EditorShowText::assembly()
     mainLayout->setContentsMargins(0, 0, 0, 0);
 
     // Добавляется область текста
-    mainLayout->addWidget( mTextArea.get() );
+    mainLayout->addWidget( mTextArea.data() );
 }
 
 
@@ -81,7 +81,7 @@ void EditorShowText::setNoteId(const QString &noteId)
 
 void EditorShowText::setHtml(QString text)
 {
-    mTextArea.get()->setHtml(text);
+    mTextArea.data()->setHtml(text);
 }
 
 
@@ -98,16 +98,16 @@ void EditorShowText::setDocument(QSharedPointer<QTextDocument> pDocument)
     // и это приводит к сегфолту. При установке nullptr, похоже, что предыдущий
     // документ не удаляется, и это используется для предотвращения порчи памяти
     // в последующем вызове setDocument(). Надо разобраться дальше
-    mTextArea.get()->setDocument( nullptr );
+    mTextArea.data()->setDocument( nullptr );
 
     // Указатель на документ запоминается
     mTextDocument=pDocument;
 
     // Полученный документ устанавливается как содержимое области редактирования
-    if(mTextArea.get()->document()!=mTextDocument.get())
+    if(mTextArea.data()->document()!=mTextDocument.data())
     {
-        mTextArea.get()->setDocument( mTextDocument.get() );
-        mTextArea.get()->document()->setParent( mTextArea.get() );
+        mTextArea.data()->setDocument( mTextDocument.data() );
+        mTextArea.data()->document()->setParent( mTextArea.data() );
     }
 }
 
@@ -201,7 +201,7 @@ void EditorShowText::onCustomContextMenuRequested(const QPoint &pos)
     mContextMenu->update();
 
     // Контекстное меню запускается
-    mContextMenu->exec( mTextArea.get()->viewport()->mapToGlobal(pos) );
+    mContextMenu->exec( mTextArea.data()->viewport()->mapToGlobal(pos) );
 }
 
 

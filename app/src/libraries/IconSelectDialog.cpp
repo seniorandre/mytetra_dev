@@ -18,6 +18,7 @@
 #include "views/mainWindow/MainWindow.h"
 #include "libraries/helpers/ObjectHelper.h"
 #include "libraries/helpers/MessageHelper.h"
+#include "qt_old_fix.h"
 
 extern AppConfig mytetraConfig;
 
@@ -146,7 +147,7 @@ void IconSelectDialog::setupUI()
 void IconSelectDialog::setupSignals()
 {
   // Выбор раздела
-  connect(&sectionComboBox, qOverload<const QString &>(&QComboBox::currentIndexChanged),
+  connect(&sectionComboBox, QOverload<const QString &>::of(&QComboBox::currentIndexChanged),
           this,             &IconSelectDialog::onSectionCurrentIndexChanged);
 
   // Выбор иконки

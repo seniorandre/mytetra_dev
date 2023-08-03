@@ -29,6 +29,7 @@
 #include "views/tree/KnowTreeView.h"
 #include "libraries/helpers/ObjectHelper.h"
 #include "libraries/helpers/CssHelper.h"
+#include "qt_old_fix.h"
 
 extern AppConfig mytetraConfig;
 extern GlobalParameters globalParameters;
@@ -262,13 +263,13 @@ void FindScreen::setupSignals(void)
           this,        &FindScreen::widgetHide);
 
   // Сигналы для запоминания состояния интерфейса
-  connect(wordRegard, qOverload<int>(&MtComboBox::currentIndexChanged),
+  connect(wordRegard, QOverload<int>::of(&MtComboBox::currentIndexChanged),
           this,       &FindScreen::changedWordRegard);
 
-  connect(howExtract, qOverload<int>(&MtComboBox::currentIndexChanged),
+  connect(howExtract, QOverload<int>::of(&MtComboBox::currentIndexChanged),
           this,       &FindScreen::changedHowExtract);
 
-  connect(treeSearchArea, qOverload<int>(&MtComboBox::currentIndexChanged),
+  connect(treeSearchArea, QOverload<int>::of(&MtComboBox::currentIndexChanged),
           this,           &FindScreen::changedTreeSearchArea);
 
   connect(findInName, &QCheckBox::stateChanged,

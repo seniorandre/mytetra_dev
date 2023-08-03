@@ -2,7 +2,7 @@
 #include <QtGlobal>
 
 #include "EditorFontFamilyComboBox.h"
-
+#include "qt_old_fix.h"
 
 EditorFontFamilyComboBox::EditorFontFamilyComboBox(QWidget *parent) :
     QFontComboBox(parent),
@@ -35,7 +35,7 @@ EditorFontFamilyComboBox::~EditorFontFamilyComboBox()
 
 void EditorFontFamilyComboBox::setupSignals()
 {
-    connect(this, qOverload<int>(&EditorFontFamilyComboBox::currentIndexChanged),
+    connect(this, QOverload<int>::of(&EditorFontFamilyComboBox::currentIndexChanged),
             this, &EditorFontFamilyComboBox::onCurrentIndexChanged);
 }
 

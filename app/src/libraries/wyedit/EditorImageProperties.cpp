@@ -4,6 +4,7 @@
 #include <QtGlobal>
 
 #include "EditorImageProperties.h"
+#include "qt_old_fix.h"
 
 
 EditorImageProperties::EditorImageProperties(QWidget *parent) : QDialog(parent)
@@ -67,11 +68,11 @@ void EditorImageProperties::setup_ui()
 
 void EditorImageProperties::setup_signals()
 {    
- connect(percentSizeSpin, qOverload<int>(&QSpinBox::valueChanged),
+ connect(percentSizeSpin, QOverload<int>::of(&QSpinBox::valueChanged),
          this,            &EditorImageProperties::on_changed_percent);
- connect(widthSpin,       qOverload<int>(&QSpinBox::valueChanged),
+ connect(widthSpin,       QOverload<int>::of(&QSpinBox::valueChanged),
          this,            &EditorImageProperties::on_changed_width);
- connect(heightSpin,      qOverload<int>(&QSpinBox::valueChanged),
+ connect(heightSpin,      QOverload<int>::of(&QSpinBox::valueChanged),
          this,            &EditorImageProperties::on_changed_height);
 
  connect(resetSizeButton, &QPushButton::pressed, this, &EditorImageProperties::on_click_reset_size);

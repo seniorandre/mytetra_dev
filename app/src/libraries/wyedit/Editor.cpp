@@ -36,6 +36,7 @@
 #include "../TraceLogger.h"
 #include "libraries/helpers/DiskHelper.h"
 #include "libraries/helpers/ObjectHelper.h"
+#include "qt_old_fix.h"
 
 
 // Максимально возможная длина выделения текста (в символах) при которой
@@ -504,7 +505,7 @@ void Editor::setupToolsSignals(void)
     connect(editorToolBarAssistant->fontSelect, &EditorFontFamilyComboBox::currentFontChanged,
             typefaceFormatter,                  &TypefaceFormatter::onFontselectChanged);
 
-    connect(editorToolBarAssistant->fontSize, qOverload<int>(&EditorFontSizeComboBox::currentIndexChanged),
+    connect(editorToolBarAssistant->fontSize, QOverload<int>::of(&EditorFontSizeComboBox::currentIndexChanged),
             typefaceFormatter,                &TypefaceFormatter::onFontsizeChanged);
 
     connect(editorToolBarAssistant->fontColor, &QAction::triggered,
@@ -847,6 +848,10 @@ bool Editor::saveTextareaImages(int mode=SAVE_IMAGES_SIMPLE)
 void Editor::saveTextarea(void)
 {
   qDebug() << "Save textarea...";
+
+  // save title to file document
+  getTextareaDocument()->setMetaInformation(
+      QTextDocument::DocumentTitle, getMiscField("title"));
 
   // Если запись была открыта на просмотр и изменена
   if(getWorkDirectory().length()!=0 &&

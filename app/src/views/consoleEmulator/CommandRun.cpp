@@ -13,6 +13,7 @@
 #include "libraries/ActionLogger.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/helpers/ObjectHelper.h"
+#include "qt_old_fix.h"
 
 extern ActionLogger actionLogger;
 extern GlobalParameters globalParameters;
