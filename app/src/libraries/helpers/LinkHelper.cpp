@@ -96,7 +96,8 @@ bool LinkHelper::isExternal(const QUrl &url)
     QStringList external = QStringList() << "http"
                                          << "https"
                                          << "ftp"
-                                         << "sftp";
+                                         << "sftp"
+                                         << "file";
 
     return external.contains( scheme );
 }
